@@ -30,7 +30,7 @@ int main() {
 		printf("Element: %d\n", x);
 
 		int y = get_element(&myVec, 5); // This will trigger assert() and halt
-		(void)y; // Silences the warning by "using" the variable in a no-op
+		(void)y; /* Silence a not-used compiler warning by "using" the variable in a no-op cast*/
 
 		return 0;
 }
