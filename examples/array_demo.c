@@ -11,7 +11,8 @@ int get_element(IntArray *array, int index) {
 		RECONDITION: Index must be within the current logical size
 	*/
 	Require(array != NULL);
-	Require(index >= 0 && index < array->size);
+	Require(index >= 0);
+	Require(index < array->size);
 
 	int val = array->data[index];
 	
