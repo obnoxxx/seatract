@@ -7,14 +7,18 @@ typedef struct {
 } IntArray;
 
 int get_element(IntArray *array, int index) {
-	// PRECONDITION: Index must be within the current logical size
+	/*
+		RECONDITION: Index must be within the current logical size
+	*/
 	Require(array != NULL);
 	Require(index >= 0 && index < array->size);
 
 	int val = array->data[index];
 	
-	// POSTCONDITION: Ensure we aren't returning uninitialized-style data 
-	// (Example logic: our array only stores positive integers)
+	/*
+		POSTCONDITION: Ensure we aren't returning uninitialized-style data
+		(Example logic: our array only stores positive integers)
+	*/
 	Ensure(val >= 0);
 	
 	return val;
