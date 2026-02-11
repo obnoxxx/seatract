@@ -15,6 +15,7 @@ CHECKMAKE=go run github.com/checkmake/checkmake/cmd/checkmake@latest
 all: build build.stripped
 .PHONY: build
 build: examples
+.PHONY: examples
 examples:$(BINS)
 .PHONY:build.stripped
 build.stripped: examples.stripped
