@@ -3,7 +3,8 @@
   write preconditions and postconditions in C.
 
   preconditions and postconditions can be implemented using assert(3) but
-  while still relying on assert, seatract offers more idiomatically named wrappers Require() and Ensure().
+  while still relying on abort, seatract offers more idiomatically named wrappers Require() and Ensure()
+  Thatproduce more helpful error output than plain assert(3).
 */
 
  
@@ -15,30 +16,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 /*
-#define Require(cond) assert(cond)
-
-#define Ensure(cond) assert(cond)
-*/
-
-
-/* 
-A simple internal handler to add context
+A simple internal handler as substitute for assert(3).
+It adds useful context to the error output.
 */
 #define CONTRACT_ASSERT(cond, type) \
-    do { \
-        if (!(cond)) { \
-            fprintf(stderr, "SEATRACT VIOLATION [%s]: '%s' failed in %s (%s:%d)\n", \
-                    type, #cond, __func__, __FILE__, __LINE__); \
-            abort(); \
-        } \
-    } while (0)
+	do { \
+		if (!(cond)) { \
+			fprintf(stderr, "SEATRACT VIOLATION [%s]: '%s' failed in %s (%s:%d)\n", \
+				type, #cond, __func__, __FILE__, __LINE__); \
+		 abort(); \
+		} \
+	while (0)
 
 #define Require(cond) CONTRACT_ASSERT(cond, "Precondition")
 #define Ensure(cond)  CONTRACT_ASSERT(cond, "Postcondition")
-
-
-#include <assert.h>
 
 
 
