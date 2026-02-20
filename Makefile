@@ -1,50 +1,52 @@
-CC = gcc
-CFLAGS = -I./include -Wall -Wextra
-CFLAGS_STRIP= -DNDEBUG
+# /seatract/Makefile
+include meta.mk
 
-EXAMPLES_DIR = examples
-SOURCES = $(wildcard $(EXAMPLES_DIR)/*.c)
-BINS = $(SOURCES:.c=)
-	BINS_STRIPPED = $(SOURCES:.c=_stripped)
-#SOURCES_VALID = $(wildcard $(EXAMPLES_DIR)/*_valid.c)
-SOURCES_VALID = $(shell ls $(EXAMPLES_DIR)/*_valid.c)
-BINS_VALID = $(SOURCES_VALID:.c=)
+ALL_TARGETS :=
+CLEAN_LIST :=
+
+EXAMPLES_VALID :=
+EXAMPLES_DEMO_BINS :=
+
 CHECKMAKE=go run github.com/checkmake/checkmake/cmd/checkmake@latest
 
 
 
 
+# Include the root module.mk first so shared variables are defined
+include ./module.mk
+# Then include example library module.mk files, followed by demo module.mk files, in a stable order
+include $(shell find ./examples -path "*/library/module.mk" | sort)
+include $(shell find ./examples -path "*/demo/module.mk" | sort)
+.PHONY: checkmake
+checkmake:
+	@$(CHECKMAKE) Makefile
+
+
+.PHONY: shellcheck
+shellcheck:
+	@shellcheck $(shell find . -name '*.sh')
+.PHONY: lint
+
+lint: checkmake shellcheck
+
+
+.PHONY: run.examples.valid
+run.examples.valid: $(EXAMPLES_VALID)
+	@for cmd in $(EXAMPLES_VALID); do $$cmd ; done
+
+
+.PHONY: examples.demos
+examples.demos: $(EXAMPLES_DEMO_BINS)
+
 .PHONY: all
-all: build build.stripped
-.PHONY: build
-build: examples
-.PHONY: examples
-examples:$(BINS)
-.PHONY:build.stripped
-build.stripped: examples.stripped
-.PHONY: examples.stripped
+all: $(ALL_TARGETS)
 
-examples.stripped: $(BINS_STRIPPED)
-$(EXAMPLES_DIR)/%_stripped: $(EXAMPLES_DIR)/%.c Makefile
-	$(CC) $(CFLAGS) $(CFLAGS_STRIP) $< -o $@
+.PHONY: test
+test: run.examples.valid
 
-$(EXAMPLES_DIR)/%: $(EXAMPLES_DIR)/%.c Makefile
-	$(CC) $(CFLAGS) $< -o $@
+.PHONY: check
+check: lint all test
 
 .PHONY: clean
 clean:
-	rm -f $(BINS) $(BINS_STRIPPED)
-
-.PHONY: makeckmake
-checkmake: ## lint the Makefile with checkmake.
-	@$(CHECKMAKE) Makefile
-
-.PHONY: check
-check: checkmake
-
-.PHONY: run.examples.valid
-run.examples.valid: $(BINS_VALID)
-	@for cmd in $(BINS_VALID); do $$cmd ;  done
-
-.PHONY: test
-test: clean all check run.examples.valid
+	rm -rf $(CLEAN_LIST)

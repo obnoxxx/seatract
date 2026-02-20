@@ -1,0 +1,9 @@
+# top level seatract module.mk
+
+SEATRACT_BASE_DIR := $(call GET_SELF_DIR)
+SEATRACT_INC_DIR := $(SEATRACT_BASE_DIR)/include
+
+SEATRACT_H := $(SEATRACT_INC_DIR)/seatract.h
+
+CFLAGS_USE_SEATRACT := -I$(SEATRACT_INC_DIR)
+

@@ -1,6 +1,8 @@
-#include <stdio.h>
-#include <stdbool.h>
+/*
+ * Module providing a function "divide".
+ */
 #include "seatract.h"
+#include "divide.h"
 
 /**
  * @brief Divides two integers.
@@ -23,11 +25,3 @@ float divide(int a, int b) {
     return result;
 }
 
-int main() {
-    printf("Result of 10 / 2: %.2f\n", divide(10, 2));
-
-    // This call triggers a contract violation in seatract
-    printf("Result of 10 / 0: %.2f\n", divide(10, 0));
-
-    return 0;
-}
