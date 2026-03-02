@@ -7,7 +7,7 @@ CLEAN_LIST :=
 EXAMPLES_VALID :=
 EXAMPLES_DEMO_BINS :=
 
-CHECKMAKE=go run github.com/checkmake/checkmake/cmd/checkmake@latest
+CHECKMAKE=go run github.com/checkmake/checkmake/cmd/checkmake@v0.3.2
 
 
 
