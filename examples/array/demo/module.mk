@@ -9,15 +9,8 @@ ARRAY_DEMO_BIN_VALID := $(ARRAY_DEMO_BIN_DIR)/array_demo_valid
 
 # find all .c files in src and plan their output in bin/
 ARRAY_DEMO_SOURCES := $(wildcard $(ARRAY_DEMO_SRC_DIR)/*.c)
-#ARRAY_DEMO_BASE_NAMES := $(foreach src,$(ARRAY_DEMO_SOURCES),$(basename $(notdir $(src))))
-#ARRAY_DEMO_BINS := $(foreach name,$(ARRAY_DEMO_BASE_NAMES),$(ARRAY_DEMO_BIN_DIR)/array_demo_$(name))
 ARRAY_DEMO_BINS  := $(patsubst $(ARRAY_DEMO_SRC_DIR)/%.c, $(ARRAY_DEMO_BIN_DIR)/array_demo_%, $(ARRAY_DEMO_SOURCES))
 
-# Find all .c files in demo/src and plan their output in demo/bin
-##ARRAY_DEMO_BINS := $(patsubst $(array_DEMO_SRC_DIR)/%.c, $(ARRAY_DEMO_BIN_DIR)/array_demo_%, $(wildcard $(ARRAY_DEMO_SRC_DIR)/*.c))
-
-#ARRAY_DEMO_BINS  := $(addprefix $(ARRAY_DEMO_BIN_DIR)/, \
-#	             $(subst /,_,$(patsubst $(SRC_DIR)/%.c,array/demo/%,$(SOURCES))))
 
 # 1. Set flags for the demo: use pkg-config if the local .pc is available, else fall back to manual flags
 ARRAY_PKG_CONFIG_PATH := $(LIBARRAY_PC_DIR):$(PKG_CONFIG_PATH)
