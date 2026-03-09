@@ -109,7 +109,7 @@ CFLAGS_USE_LIB${UCNAME} :=  \$(CPPFLAGS_USE_LIB${UCNAME})
 		@mkdir -p \$@
 
 \$(LIB${UCNAME}_PC_DIR):
-	@mkdir -p \$(LIB${UCNAME}_PC_DIR)
+	@mkdir -p \$@
 
 \$(LIB${UCNAME}_PC): \$(LIB${UCNAME}_BASE_DIR)/lib${NAME}.pc.in | \$(LIB${UCNAME}_PC_DIR)
 	sed -e 's|@LIBDIR@|\$(LIB${UCNAME}_LIB_DIR)|g' \\
@@ -130,7 +130,7 @@ ${NAME}.library: lib${NAME}
 
 # populate the globals:
 ALL_TARGETS += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_PC)
-CLEAN_LIST  += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_OBJS) \$(LIB${UCNAME}_LIB_OBJ_DIR) \$(LIB${UCNAME}_PC) \$(LIB${UCNAME}_PC_DIR) \$(LIB${UCNAME}_LIB_DIR)
+CLEAN_LIST  += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_OBJS) \$(LIB${UCNAME}_OBJ_DIR) \$(LIB${UCNAME}_PC) \$(LIB${UCNAME}_PC_DIR) \$(LIB${UCNAME}_LIB_DIR)
 EOF1
 
 echo "finished file 1 (${file})."
@@ -237,7 +237,7 @@ ${NAME}.demos: \$(${UCNAME}_DEMO_BINS)
 # populate the globals:
 ALL_TARGETS += \$(${UCNAME}_DEMO_BINS)
 CLEAN_LIST += \$(${UCNAME}_DEMO_BINS) \$(${UCNAME}_DEMO_BIN_DIR)
-XAMPLES_VALID += \$(${UCNAME}_DEMO_BIN_VALID)
+EXAMPLES_VALID += \$(${UCNAME}_DEMO_BIN_VALID)
 EXAMPLES_DEMO_BINS += \$(${UCNAME}_DEMO_BINS)
 
 EOF5
