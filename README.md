@@ -38,3 +38,35 @@ float divide(int a, int b) {
 
     return result;
 }
+```
+
+---
+
+## Building the Examples
+
+```sh
+make all
+```
+
+This builds the example libraries (`libdivide.a`, `libarray.a`), their demo binaries, and generates a `pkg-config` metadata file (`.pc`) for each library under `lib/pkgconfig/`.
+
+---
+
+## pkg-config Integration
+
+Each example library ships a generated `.pc` file at `lib/pkgconfig/<name>.pc` after running `make all`.
+To use it from an external project or shell session, point `PKG_CONFIG_PATH` at the generated directory:
+
+```sh
+# For libdivide:
+export PKG_CONFIG_PATH=/path/to/seatract/examples/divide/library/lib/pkgconfig:$PKG_CONFIG_PATH
+pkg-config --cflags libdivide   # e.g. -I/path/to/.../include
+pkg-config --libs   libdivide   # e.g. -L/path/to/.../lib -ldivide
+
+# For libarray:
+export PKG_CONFIG_PATH=/path/to/seatract/examples/array/library/lib/pkgconfig:$PKG_CONFIG_PATH
+pkg-config --cflags libarray
+pkg-config --libs   libarray
+```
+
+The demo builds use `pkg-config` automatically when the `.pc` file is present, and fall back to manual flags otherwise, so the build always works regardless of build order.

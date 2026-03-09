@@ -17,10 +17,20 @@ DIVIDE_DEMO_BIN_VALID := $(DIVIDE_DEMO_BIN_DIR)/divide_demo_valid
 #DIVIDE_DEMO_BINS  := $(addprefix $(DIVIDE_DEMO_BIN_DIR)/, \
 #	             $(subst /,_,$(patsubst $(SRC_DIR)/%.c,divide/demo/%,$(SOURCES))))
 
-# 1. Set flags for the demo (it needs the library include):
-$(DIVIDE_DEMO_BINS): CFLAGS += $(CFLAGS_USE_LIBDIVIDE)
-$(DIVIDE_DEMO_BINS): LDFLAGS += $(LDFLAGS_USE_LIBDIVIDE)
-$(DIVIDE_DEMO_BINS): LDLIBS += $(LDLIBS_USE_LIBDIVIDE)
+# 1. Set flags for the demo: use pkg-config if the local .pc is available, else fall back to manual flags
+DIVIDE_PKG_CONFIG_PATH := $(LIBDIVIDE_PC_DIR):$(PKG_CONFIG_PATH)
+DIVIDE_PC_CFLAGS  := $(shell PKG_CONFIG_PATH=$(DIVIDE_PKG_CONFIG_PATH) pkg-config --cflags libdivide 2>/dev/null)
+DIVIDE_PC_LDFLAGS := $(shell PKG_CONFIG_PATH=$(DIVIDE_PKG_CONFIG_PATH) pkg-config --libs-only-L libdivide 2>/dev/null)
+DIVIDE_PC_LDLIBS  := $(shell PKG_CONFIG_PATH=$(DIVIDE_PKG_CONFIG_PATH) pkg-config --libs-only-l libdivide 2>/dev/null)
+ifeq ($(DIVIDE_PC_CFLAGS),)
+DIVIDE_PC_CFLAGS  := $(CFLAGS_USE_LIBDIVIDE)
+DIVIDE_PC_LDFLAGS := $(LDFLAGS_USE_LIBDIVIDE)
+DIVIDE_PC_LDLIBS  := $(LDLIBS_USE_LIBDIVIDE)
+endif
+
+$(DIVIDE_DEMO_BINS): CFLAGS += $(DIVIDE_PC_CFLAGS)
+$(DIVIDE_DEMO_BINS): LDFLAGS += $(DIVIDE_PC_LDFLAGS)
+$(DIVIDE_DEMO_BINS): LDLIBS += $(DIVIDE_PC_LDLIBS)
 
 
 

@@ -1,0 +1,4 @@
+# Build artifacts: compiled objects, archives, and binaries
+examples/*/library/obj/
+examples/*/library/lib/
+examples/*/demo/bin/

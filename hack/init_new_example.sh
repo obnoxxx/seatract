@@ -79,6 +79,8 @@ LIB${UCNAME}_SRC_DIR := \$(LIB${UCNAME}_BASE_DIR)/src
 LIB${UCNAME}_OBJ_DIR := \$(LIB${UCNAME}_BASE_DIR)/obj
 LIB${UCNAME}_LIB_A := \$(LIB${UCNAME}_LIB_DIR)/lib${NAME}.a
 LIB${UCNAME}_HDR := \$(LIB${UCNAME}_INC_DIR)/${NAME}.h
+LIB${UCNAME}_PC_DIR := \$(LIB${UCNAME}_LIB_DIR)/pkgconfig
+LIB${UCNAME}_PC     := \$(LIB${UCNAME}_PC_DIR)/lib${NAME}.pc
 
 LIB${UCNAME}_SRCS := \$(wildcard \$(LIB${UCNAME}_SRC_DIR)/*.c)
 LIB${UCNAME}_OBJS := \$(patsubst \$(LIB${UCNAME}_SRC_DIR)/%.c, \$(LIB${UCNAME}_OBJ_DIR)/%.o, \$(LIB${UCNAME}_SRCS))
@@ -106,6 +108,14 @@ CFLAGS_USE_LIB${UCNAME} :=  \$(CPPFLAGS_USE_LIB${UCNAME})
 \$(LIB${UCNAME}_LIB_DIR):
 		@mkdir -p \$@
 
+\$(LIB${UCNAME}_PC_DIR):
+	@mkdir -p \$(LIB${UCNAME}_PC_DIR)
+
+\$(LIB${UCNAME}_PC): \$(LIB${UCNAME}_BASE_DIR)/lib${NAME}.pc.in | \$(LIB${UCNAME}_PC_DIR)
+	sed -e 's|@LIBDIR@|\$(LIB${UCNAME}_LIB_DIR)|g' \\
+	    -e 's|@INCLUDEDIR@|\$(LIB${UCNAME}_INC_DIR)|g' \\
+	    \$< > \$@
+
 .PHONY: lib${NAME}
 lib${NAME}: \$(LIB${UCNAME}_LIB_A)
 
@@ -119,8 +129,8 @@ ${NAME}.library: lib${NAME}
 	\$(AR) -rc \$@ \$(LIB${UCNAME}_OBJS)
 
 # populate the globals:
-ALL_TARGETS += \$(LIB${UCNAME}_LIB_A)
-CLEAN_LIST  += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_OBJS) \$(LIB${UCNAME}_LIB_OBJ_DIR) \$(LIB${UCNAME}_LIB_DIR)
+ALL_TARGETS += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_PC)
+CLEAN_LIST  += \$(LIB${UCNAME}_LIB_A) \$(LIB${UCNAME}_OBJS) \$(LIB${UCNAME}_LIB_OBJ_DIR) \$(LIB${UCNAME}_PC) \$(LIB${UCNAME}_PC_DIR) \$(LIB${UCNAME}_LIB_DIR)
 EOF1
 
 echo "finished file 1 (${file})."
@@ -144,11 +154,28 @@ EOF2
 
 echo "finished file 2 (${file})."
 
-file="${LIB}/src/${NAME}.c"
+file="${LIB}/lib${NAME}.pc.in"
 
 echo "starting file 3 (${file})."
+# Create pkg-config template for library
+cat <<EOF3PC > "${file}"
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
+
+Name: lib${NAME}
+Description: Example ${NAME} library demonstrating seatract design-by-contract
+Version: 0.1
+Libs: -L\${libdir} -l${NAME}
+Cflags: -I\${includedir}
+EOF3PC
+
+echo "finished file 3 (${file})."
+
+file="${LIB}/src/${NAME}.c"
+
+echo "starting file 4 (${file})."
 # Create template source for library
-cat <<EOF3 > "${file}"
+cat <<EOF4 > "${file}"
 
 /*
  * module providing ${NAME}.
@@ -158,15 +185,15 @@ cat <<EOF3 > "${file}"
 #include "${NAME}.h"
 
 /* code here... */
-EOF3
+EOF4
 
-echo "finished file 3 (${file})."
+echo "finished file 4 (${file})."
 
 file="${DEMO}/module.mk"
 
-echo "starting file 4 (${file})."
+echo "starting file 5 (${file})."
 # Create Demo module.mk
-cat <<EOF4 > "${file}"
+cat <<EOF5 > "${file}"
 ${UCNAME}_DEMO_BASE_DIR := \$(call GET_SELF_DIR)
 ${UCNAME}_DEMO_SRC_DIR  := \$(${UCNAME}_DEMO_BASE_DIR)/src
 ${UCNAME}_DEMO_BIN_DIR  := \$(${UCNAME}_DEMO_BASE_DIR)/bin
@@ -178,6 +205,20 @@ ${UCNAME}_DEMO_SOURCES := \$(wildcard \$(${UCNAME}_DEMO_SRC_DIR)/*.c)
 ${UCNAME}_DEMO_BASE_NAMES := \$(foreach src,\$(${UCNAME}_DEMO_SOURCES),\$(basename \$(notdir \$(src))))
 ${UCNAME}_DEMO_BINS  := \$(patsubst \$(${UCNAME}_DEMO_SRC_DIR)/%.c, \$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_%, \$(${UCNAME}_DEMO_SOURCES))
 
+# 1. Set flags for the demo: use pkg-config if the local .pc is available, else fall back to manual flags
+${UCNAME}_PKG_CONFIG_PATH := \$(LIB${UCNAME}_PC_DIR):\$(PKG_CONFIG_PATH)
+${UCNAME}_PC_CFLAGS  := \$(shell PKG_CONFIG_PATH=\$(${UCNAME}_PKG_CONFIG_PATH) pkg-config --cflags lib${NAME} 2>/dev/null)
+${UCNAME}_PC_LDFLAGS := \$(shell PKG_CONFIG_PATH=\$(${UCNAME}_PKG_CONFIG_PATH) pkg-config --libs-only-L lib${NAME} 2>/dev/null)
+${UCNAME}_PC_LDLIBS  := \$(shell PKG_CONFIG_PATH=\$(${UCNAME}_PKG_CONFIG_PATH) pkg-config --libs-only-l lib${NAME} 2>/dev/null)
+ifeq (\$(${UCNAME}_PC_CFLAGS),)
+${UCNAME}_PC_CFLAGS  := \$(CFLAGS_USE_LIB${UCNAME})
+${UCNAME}_PC_LDFLAGS := \$(LDFLAGS_USE_LIB${UCNAME})
+${UCNAME}_PC_LDLIBS  := \$(LDLIBS_USE_LIB${UCNAME})
+endif
+
+\$(${UCNAME}_DEMO_BINS): CFLAGS  += \$(${UCNAME}_PC_CFLAGS)
+\$(${UCNAME}_DEMO_BINS): LDFLAGS += \$(${UCNAME}_PC_LDFLAGS)
+\$(${UCNAME}_DEMO_BINS): LDLIBS  += \$(${UCNAME}_PC_LDLIBS)
 
 # Rule: Build demos (links against example library)
 # note that the CC command directly references the static library file to avoid linker issues.
@@ -199,16 +240,16 @@ CLEAN_LIST += \$(${UCNAME}_DEMO_BINS) \$(${UCNAME}_DEMO_BIN_DIR)
 XAMPLES_VALID += \$(${UCNAME}_DEMO_BIN_VALID)
 EXAMPLES_DEMO_BINS += \$(${UCNAME}_DEMO_BINS)
 
-EOF4
+EOF5
 
-echo "finished file 4 (${file})."
+echo "finished file 5 (${file})."
 
 
 file="${DEMO}/src/valid.c"
 
-echo "starting file 5 (${file})."
+echo "starting file 6 (${file})."
 # Create template source for a valid demo
-cat <<EOF5 > "${file}"
+cat <<EOF6 > "${file}"
 
 /*
  * A demo program that uses the ${NAME} library in a valid way.
@@ -222,16 +263,16 @@ int main() {
 return 0;
 
 }
-EOF5
+EOF6
 
-echo "finished file 5 (${file})."
+echo "finished file 6 (${file})."
 
 file="${DEMO}/src/violate.c"
 
-echo "starting file 6 (${file})."
+echo "starting file 7 (${file})."
 
 # Create template source for a violating demo
-cat <<EOF6 > "${file}"
+cat <<EOF7 > "${file}"
 
 /*
  * A demo program that uses the ${NAME} library in a way that violates the contract.
@@ -245,9 +286,9 @@ int main() {
 return 0;
 
 }
-EOF6
+EOF7
 
-echo "finished file 6 (${file})."
+echo "finished file 7 (${file})."
 
 
 echo "example structure for '${NAME}' created under ${BASE}"

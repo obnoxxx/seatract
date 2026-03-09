@@ -19,10 +19,20 @@ ARRAY_DEMO_BINS  := $(patsubst $(ARRAY_DEMO_SRC_DIR)/%.c, $(ARRAY_DEMO_BIN_DIR)/
 #ARRAY_DEMO_BINS  := $(addprefix $(ARRAY_DEMO_BIN_DIR)/, \
 #	             $(subst /,_,$(patsubst $(SRC_DIR)/%.c,array/demo/%,$(SOURCES))))
 
-# 1. Set flags for the demo (it needs the library include):
-$(ARRAY_DEMO_BINS): CFLAGS += $(CFLAGS_USE_LIBARRAY)
-$(ARRAY_DEMO_BINS): LDFLAGS += $(LDFLAGS_USE_LIBARRAY)
-$(ARRAY_DEMO_BINS): LDLIBS += $(LDLIBS_USE_LIBARRAY)
+# 1. Set flags for the demo: use pkg-config if the local .pc is available, else fall back to manual flags
+ARRAY_PKG_CONFIG_PATH := $(LIBARRAY_PC_DIR):$(PKG_CONFIG_PATH)
+ARRAY_PC_CFLAGS  := $(shell PKG_CONFIG_PATH=$(ARRAY_PKG_CONFIG_PATH) pkg-config --cflags libarray 2>/dev/null)
+ARRAY_PC_LDFLAGS := $(shell PKG_CONFIG_PATH=$(ARRAY_PKG_CONFIG_PATH) pkg-config --libs-only-L libarray 2>/dev/null)
+ARRAY_PC_LDLIBS  := $(shell PKG_CONFIG_PATH=$(ARRAY_PKG_CONFIG_PATH) pkg-config --libs-only-l libarray 2>/dev/null)
+ifeq ($(ARRAY_PC_CFLAGS),)
+ARRAY_PC_CFLAGS  := $(CFLAGS_USE_LIBARRAY)
+ARRAY_PC_LDFLAGS := $(LDFLAGS_USE_LIBARRAY)
+ARRAY_PC_LDLIBS  := $(LDLIBS_USE_LIBARRAY)
+endif
+
+$(ARRAY_DEMO_BINS): CFLAGS += $(ARRAY_PC_CFLAGS)
+$(ARRAY_DEMO_BINS): LDFLAGS += $(ARRAY_PC_LDFLAGS)
+$(ARRAY_DEMO_BINS): LDLIBS += $(ARRAY_PC_LDLIBS)
 
 
 
