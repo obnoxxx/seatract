@@ -5,38 +5,60 @@ NAME=$1
 UCNAME="$(echo "${NAME}" | tr '[:lower:]' '[:upper:]' )"
 
 
-# Returns 0 (true) if forbidden chars are found, 1 (false) if clean
+# has_forbidden_chars function:
+# returns 0 (true) if forbidden chars are found, 1 (false) if clean
 
 has_forbidden_chars() {
 	local input="$1"
 
 	# Define the pattern in a variable (no extra quotes inside the brackets)
-# This matches: any whitespace, a literal backslash, or a literal dot
-forbidden_pattern='[[:space:]\\.]'
+	# This matches: any whitespace, a literal backslash, or a literal slash
+	local forbidden_chars_pattern='[[:space:]/\\]'
 
-	# The regex checks for whitespace, backslash, or dot
+	# The regex checks for whitespace, backslash, or slash
 	# We use [[:space:]] to catch tabs and newlines as well
-	if [[ "${input}" =~ ${forbidden_pattern} ]]
-       then
-		return 1
+	if [[ "${input}" =~ $forbidden_chars_pattern ]]
+	then
+		# forbidden characters found
+		return 0
 	fi
-return 0
+	# input is clean.
+	return 1
 
 }
+
+
+
+
+
 
 name_is_valid() {
 	local name="$1"
-	if [[ -z "${name}" ]]
+
+	# check for explicitly forbidden names (exact matches)
+	case "${name}" in
+		""|" " |"."|"/"|"\\")
+			echo "name is forbidden: '${name}'"
+			# name is invalid
+			return 1 
+			;;
+	esac
+
+	# check for forbidden characters anywhere in the string
+	if has_forbidden_chars "${name}"
 	then
-		echo "name may not be empty."
-		return 1
-	elif has_forbidden_chars "${name}"
-	then
-		echo "Name '${name}' contains forbidden characters (whitespace,/,\, '.')."
+		echo "Name contains forbidden characters (whitespace, /, \\)."
+		# name is invalid.
 		return 1
 	fi
+	# name is valid.
 	return 0
 }
+
+
+
+
+
 
 
 if ! name_is_valid "${NAME}"
@@ -248,7 +270,7 @@ endif
 # note that the CC command directly references the static library file to avoid linker issues.
 # the dependencies include the phony library build target as the library file dep did not work.
 \$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_%: \$(${UCNAME}_DEMO_SRC)/%.c lib${NAME} \$(iLIB${UCNAME}_LIB_A) \$(${UCNAME}_DEMO_BIN_DIR)
-\\$(CC) \$(CFLAGS) \$(GLOBAL_CFLAGS) \$(LDFLAGS) \$(LDLIBS) \$< \$(LIB${UCNAME}_LIB_A) -o \$@
+	\$(CC) \$(CFLAGS) \$(GLOBAL_CFLAGS) \$(LDFLAGS) \$(LDLIBS) \$< \$(LIB${UCNAME}_LIB_A) -o \$@
 
 \$(${UCNAME}_DEMO_BIN_DIR):
 		@mkdir -p \$@
