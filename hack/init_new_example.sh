@@ -268,7 +268,7 @@ endif
 # Rule: Build demos (links against example library)
 # note that the CC command directly references the static library file to avoid linker issues.
 # the dependencies include the phony library build target as the library file dep did not work.
-\$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_%: \$(${UCNAME}_DEMO_SRC)/%.c lib${NAME} \$(iLIB${UCNAME}_LIB_A) \$(${UCNAME}_DEMO_BIN_DIR)
+\$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_%: \$(${UCNAME}_DEMO_SRC_DIR)/%.c lib${NAME} \$(LIB${UCNAME}_LIB_A) \$(${UCNAME}_DEMO_BIN_DIR)
 	\$(CC) \$(CFLAGS) \$(GLOBAL_CFLAGS) \$(LDFLAGS) \$(LDLIBS) \$< \$(LIB${UCNAME}_LIB_A) -o \$@
 
 \$(${UCNAME}_DEMO_BIN_DIR):
