@@ -248,7 +248,6 @@ ${UCNAME}_DEMO_BIN_VALID := \$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_valid
 
 # # find all .c files in demo/src and plan their output in demo/bin/
 ${UCNAME}_DEMO_SOURCES := \$(wildcard \$(${UCNAME}_DEMO_SRC_DIR)/*.c)
-${UCNAME}_DEMO_BASE_NAMES := \$(foreach src,\$(${UCNAME}_DEMO_SOURCES),\$(basename \$(notdir \$(src))))
 ${UCNAME}_DEMO_BINS  := \$(patsubst \$(${UCNAME}_DEMO_SRC_DIR)/%.c, \$(${UCNAME}_DEMO_BIN_DIR)/${NAME}_demo_%, \$(${UCNAME}_DEMO_SOURCES))
 
 # 1. Set flags for the demo: use pkg-config if the local .pc is available, else fall back to manual flags
